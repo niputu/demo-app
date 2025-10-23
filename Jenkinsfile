@@ -9,26 +9,25 @@ pipeline {
     stages {
         stage('Build Docker Image') {
             steps {
-                script {
-                    sh 'docker build -t $DOCKER_IMAGE .'
-                }
+                echo "Building Docker image..."
+                sh 'docker build -t $DOCKER_IMAGE .'
             }
         }
 
         stage('Login & Push to DockerHub') {
             steps {
-                script {
-                    sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-                    sh 'docker push $DOCKER_IMAGE'
-                }
+                echo "Pushing image to DockerHub..."
+                sh '''
+                    echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
+                    docker push $DOCKER_IMAGE
+                '''
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                script {
-                    sh 'helm upgrade --install demo-app ./demo-app'
-                }
+                echo "Deploying to Kubernetes via Helm..."
+                sh 'helm upgrade --install demo-app ./demo-app'
             }
         }
     }
