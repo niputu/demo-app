@@ -7,12 +7,6 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                git 'https://github.com/niputu/demo-app.git'
-            }
-        }
-
         stage('Build Docker Image') {
             steps {
                 script {
