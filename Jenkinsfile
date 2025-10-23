@@ -2,13 +2,14 @@ pipeline {
     agent any
 
     environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
         DOCKER_IMAGE = "niputu17/demo-app:latest"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/niputu/demo-app.git'
+                git 'https://github.com/niputu/demo-app.git'
             }
         }
 
@@ -22,11 +23,9 @@ pipeline {
 
         stage('Login & Push to DockerHub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    script {
-                        sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                        sh 'docker push $DOCKER_IMAGE'
-                    }
+                script {
+                    sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                    sh 'docker push $DOCKER_IMAGE'
                 }
             }
         }
@@ -34,8 +33,7 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 script {
-                    // Pastikan path chart benar
-                    sh 'helm upgrade --install demo-app ./chart --set image.repository=niputu17/demo-app --set image.tag=latest'
+                    sh 'helm upgrade --install demo-app ./demo-app'
                 }
             }
         }
